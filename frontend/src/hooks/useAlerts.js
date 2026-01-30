@@ -10,43 +10,46 @@ import { useSnackbar } from "notistack";
 export const useAlerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [filters, setFilters] = useState({
     country: "",
     status: "",
   });
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
+
   const { enqueueSnackbar } = useSnackbar();
 
-  // Load all alerts based on filters
   const loadAlerts = async () => {
     try {
       setLoading(true);
-      const { data } = await fetchAlerts(filters);
-      setAlerts(data);
+      const { data } = await fetchAlerts(filters, page, limit);
+      setAlerts(data.data);
+      setTotalPages(data.pagination.totalPages);
     } finally {
       setLoading(false);
     }
   };
 
-  // Create a new alert
   const addAlert = async (alert) => {
     await createAlert(alert);
+    setPage(1);
     loadAlerts();
   };
 
-  // Update an alert fully (used for editing)
   const updateAlertById = async (id, updatedData) => {
     await updateAlert(id, updatedData);
     loadAlerts();
   };
 
-  // Change only status
   const changeStatus = async (id, status) => {
     await updateAlert(id, { status });
     enqueueSnackbar("Status updated", { variant: "info" });
     loadAlerts();
   };
 
-  // Delete an alert
   const removeAlert = async (id) => {
     await deleteAlert(id);
     loadAlerts();
@@ -54,16 +57,25 @@ export const useAlerts = () => {
 
   useEffect(() => {
     loadAlerts();
-  }, [filters]);
+  }, [filters, page, limit]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters, limit]);
 
   return {
     alerts,
     loading,
     addAlert,
-    updateAlert: updateAlertById, // expose update function
+    updateAlert: updateAlertById,
     changeStatus,
     removeAlert,
     filters,
     setFilters,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    totalPages,
   };
 };

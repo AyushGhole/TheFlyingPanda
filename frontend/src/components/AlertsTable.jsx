@@ -20,13 +20,13 @@ const AlertsTable = ({ alerts, loading, onEditClick, onDelete }) => {
   return (
     <div className="relative">
       {loading && (
-        <div className="absolute inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
-          <CircularProgress size={38} />
+        <div className="absolute inset-0 bg-white/30 flex items-center justify-center z-10">
+          <CircularProgress />
         </div>
       )}
 
       <Table>
-        <TableHead className="bg-gray-100">
+        <TableHead>
           <TableRow>
             <TableCell>Country</TableCell>
             <TableCell>City</TableCell>
@@ -36,6 +36,7 @@ const AlertsTable = ({ alerts, loading, onEditClick, onDelete }) => {
             <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
+
         <TableBody>
           {alerts.length === 0 ? (
             <TableRow>
@@ -45,10 +46,7 @@ const AlertsTable = ({ alerts, loading, onEditClick, onDelete }) => {
             </TableRow>
           ) : (
             alerts.map((alert) => (
-              <motion.tr
-                key={alert._id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}>
+              <motion.tr key={alert._id}>
                 <TableCell>{alert.country}</TableCell>
                 <TableCell>{alert.city}</TableCell>
                 <TableCell>{alert.visaType}</TableCell>
@@ -77,7 +75,7 @@ const AlertsTable = ({ alerts, loading, onEditClick, onDelete }) => {
       <ConfirmDialog
         open={Boolean(deleteId)}
         title="Delete alert?"
-        description="Are you sure you want to delete Visa Slot ??"
+        description="Are you sure you want to delete this visa slot?"
         onConfirm={() => onDelete(deleteId).then(() => setDeleteId(null))}
         onClose={() => setDeleteId(null)}
       />

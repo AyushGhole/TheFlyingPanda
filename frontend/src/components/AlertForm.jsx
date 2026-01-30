@@ -36,37 +36,65 @@ const AlertForm = ({ open, onClose, onSubmit, initialData }) => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-
   const handleSubmit = async () => {
     const country = form.country.trim();
     const city = form.city.trim();
 
+    const VALID_STATUSES = ["Active", "Booked", "Expired"];
+    const VALID_VISA_TYPES = ["Tourist", "Business", "Student"];
+
+    // Required check
     if (!country || !city) {
       enqueueSnackbar("Country and City are required", { variant: "warning" });
       return;
     }
 
+    // Minimum length
     if (country.length < 2 || city.length < 2) {
-      enqueueSnackbar("Country and City must be at least 2 characters", {
+      enqueueSnackbar("Country and City must be at least 2 characters long", {
         variant: "warning",
       });
       return;
     }
 
-    if (initialData && !["Active", "Booked", "Expired"].includes(form.status)) {
-      enqueueSnackbar("Invalid status value", { variant: "error" });
+    // Character validation (letters, spaces, hyphens)
+    const nameRegex = /^[a-zA-Z\s-]+$/;
+
+    if (!nameRegex.test(country) || !nameRegex.test(city)) {
+      enqueueSnackbar("Country and City can only contain letters", {
+        variant: "warning",
+      });
+      return;
+    }
+
+    // Visa type validation
+    if (!VALID_VISA_TYPES.includes(form.visaType)) {
+      enqueueSnackbar("Invalid visa type selected", { variant: "error" });
+      return;
+    }
+
+    // Status validation (edit mode only)
+    if (initialData && !VALID_STATUSES.includes(form.status)) {
+      enqueueSnackbar("Invalid status selected", { variant: "error" });
       return;
     }
 
     try {
       setLoading(true);
-      await onSubmit(form);
+
+      await onSubmit({
+        ...form,
+        country,
+        city, // store trimmed values
+      });
+
       enqueueSnackbar(
         initialData
           ? "Visa slot updated successfully"
           : "Visa slot created successfully",
         { variant: "success" },
       );
+
       onClose();
     } catch {
       enqueueSnackbar(

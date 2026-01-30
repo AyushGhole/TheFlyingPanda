@@ -2,14 +2,31 @@ import Alert from "../models/alert.model.js";
 
 export const getAlerts = async (req, res, next) => {
   try {
-    const { country, status } = req.query;
-    const filter = {};
+    const { country, status, page = 1, limit = 10 } = req.query;
 
+    const filter = {};
     if (country) filter.country = country;
     if (status) filter.status = status;
 
-    const alerts = await Alert.find(filter).sort({ createdAt: -1 });
-    res.status(200).json(alerts);
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [alerts, total] = await Promise.all([
+      Alert.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Alert.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      data: alerts,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     next(error);
   }
